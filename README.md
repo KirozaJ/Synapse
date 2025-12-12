@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# 🧠 Synapse
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **A Local-First Personal Knowledge Graph**
 
-Currently, two official plugins are available:
+Synapse is a modern, privacy-focused note-taking application designed to help you discover connections between your ideas. It combines a distraction-free markdown editor with a powerful graph visualization that evolves naturally as you write.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🕸️ Visual Knowledge Graph
+*   **Force-Directed Graph**: Visualize every note as a node and every link as a connection.
+*   **Dynamic Clustering**: Notes with the same `#tags` automatically cluster and color-code together.
+*   **Interactive Exploration**: Click nodes to navigate instantly to the relevant note.
 
-## Expanding the ESLint configuration
+### 📝 Powerful Editor
+*   **Smart Auto-Focus**: 
+    *   New notes focus the **Title** field.
+    *   Existing notes focus the **Content** (at the end).
+*   **Dual View Modes**: Switch between **Write** (raw text), **Preview** (rendered), or **Split** (side-by-side).
+*   **WikiLinks**: Type `[[` to instantly verify and link to other notes with autocomplete.
+*   **Bidirectional Linking**: Renaming a note automatically updates links in all other notes. 🛡️
+*   **Images**: Drag & Drop or Paste images directly. They are stored locally.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### ⚡ Built for Speed & Privacy
+*   **Local-First**: All data is stored in your browser's IndexedDB. No servers, no accounts, no tracking.
+*   **Offline Ready**: Works perfectly without an internet connection.
+*   **Full Search**: Global search (`Ctrl+K`) with real-time highlighting and snippet previews.
+*   **Keyboard Driven**:
+    *   `Ctrl+K`: Open Search
+    *   `Ctrl+O`: New Note
+    *   `[[`: Trigger Autocomplete
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🛠️ Data Management
+*   **Import/Export**: Full JSON backup and restore capabilities.
+*   **Maintenance Tools**: Built-in Garbage Collection to clean up unused images.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Quick Start
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yourusername/synapse.git
+    cd synapse
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2.  **Install dependencies**
+    ```bash
+    npm install
+     # or
+    yarn install
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Build for production**
+    ```bash
+    npm run build
+    ```
+
+---
+
+## 🏗️ Technology Stack
+
+*   **Frontend**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Build Tool**: [Vite](https://vitejs.dev/)
+*   **State & Storage**: [Dexie.js](https://dexie.org/) (IndexedDB wrapper)
+*   **Visualization**: [react-force-graph](https://github.com/vasturiano/react-force-graph)
+*   **Styling**: Vanilla CSS (Performance focused) + Lucide Icons
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
