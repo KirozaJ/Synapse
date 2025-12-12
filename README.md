@@ -10,6 +10,9 @@ Synapse is a modern, privacy-focused note-taking application designed to help yo
 
 ### 🕸️ Visual Knowledge Graph
 *   **Force-Directed Graph**: Visualize every note as a node and every link as a connection.
+    
+    > **[🔴 Try the Live Demo here](https://synapse.vercel.app)**
+    > *Note: This demo runs entirely in your browser. No data is sent to any server.*
 *   **Dynamic Clustering**: Notes with the same `#tags` automatically cluster and color-code together.
 *   **Interactive Exploration**: Click nodes to navigate instantly to the relevant note.
 
@@ -63,6 +66,8 @@ Synapse is a modern, privacy-focused note-taking application designed to help yo
     ```
 
 ---
+
+
 
 ## 🏗️ Technology Stack
 
