@@ -170,3 +170,55 @@
         max-height: 95vh;
     }
 }
+
+.settings-theme-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.settings-theme-card:hover {
+    background-color: var(--bg-primary);
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.settings-theme-card.active {
+    background-color: var(--bg-primary);
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+
+}
+
+.settings-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.settings-link-btn:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}

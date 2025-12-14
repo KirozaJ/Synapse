@@ -129,7 +129,6 @@ function MainLayout() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onLogout={handleLogout}
-        onRefresh={refresh}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>

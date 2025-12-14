@@ -22,7 +22,6 @@ interface SidebarProps {
     isOpen?: boolean;
     onClose?: () => void;
     onLogout?: () => void;
-    onRefresh?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -39,8 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     toggleTheme,
     isOpen = true,
     onClose,
-    onLogout,
-    onRefresh
+    onLogout
 }) => {
     const navigate = useNavigate();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
@@ -234,7 +232,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <SettingsModal
                     isOpen={isSettingsOpen}
                     onClose={() => setIsSettingsOpen(false)}
-                    onMigrationComplete={onRefresh}
+                    theme={theme}
+                    toggleTheme={toggleTheme}
                 />
             </div>
         </>
