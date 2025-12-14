@@ -1,28 +1,40 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Synapse</title>
-    <meta name="description" content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://synapse-kiroza.vercel.app/" />
-    <meta property="og:title" content="Synapse - Personal Knowledge Graph" />
-    <meta property="og:description" content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
-    <meta property="og:image" content="/logo.png" />
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synapse</title>
+  <meta name="description"
+    content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://synapse-kiroza.vercel.app/" />
-    <meta property="twitter:title" content="Synapse - Personal Knowledge Graph" />
-    <meta property="twitter:description" content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
-    <meta property="twitter:image" content="/logo.png" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://synapse-kiroza.vercel.app/" />
+  <meta property="og:title" content="Synapse - Personal Knowledge Graph" />
+  <meta property="og:description"
+    content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
+  <meta property="og:image" content="/logo.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://synapse-kiroza.vercel.app/" />
+  <meta property="twitter:title" content="Synapse - Personal Knowledge Graph" />
+  <meta property="twitter:description"
+    content="A modern, cloud-connected personal knowledge graph designed to help you discover connections between your ideas." />
+  <meta property="twitter:image" content="/logo.png" />
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

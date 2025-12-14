@@ -7,7 +7,9 @@ const Editor = lazy(() => import('./components/Editor'))
 const GraphView = lazy(() => import('./components/GraphView'))
 import './App.css'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
 import AuthPage from './pages/auth/AuthPage'
+import ResetPassword from './pages/auth/ResetPassword.tsx'
 import { useNotes } from './hooks/useNotes'
 import { noteService } from './services/NoteService'
 import { type Note } from './types'
@@ -154,16 +156,19 @@ function MainLayout() {
 function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/auth" element={<AuthPage />} />
+      <ToastProvider>
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<GraphViewWrapper />} />
-            <Route path="/note/:id" element={<Editor />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<GraphViewWrapper />} />
+              <Route path="/note/:id" element={<Editor />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </ToastProvider>
     </AuthProvider>
   )
 }

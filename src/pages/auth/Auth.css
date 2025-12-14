@@ -6,145 +6,416 @@
     min-height: 100vh;
     background-color: var(--bg-secondary);
     padding: 1rem;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Card Styling */
+/* Card Styling - The "Stage" */
 .auth-card {
     background-color: var(--bg-primary);
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    /* Soft, premium shadow */
+    border-radius: 20px;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.12);
+    position: relative;
+    overflow: hidden;
     width: 100%;
-    max-width: 420px;
+    max-width: 800px;
+    /* Wider for split */
+    min-height: 500px;
+    /* Taller for content */
     border: 1px solid var(--border);
-    transition: transform 0.3s ease;
 }
 
-.auth-card:hover {
-    transform: translateY(-2px);
-}
-
-/* Header */
-.auth-header {
+/* Common Form Container */
+.form-container {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out, z-index 0.6s step-end;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 50px;
     text-align: center;
-    margin-bottom: 2rem;
+    background-color: var(--bg-primary);
 }
 
+/* Sign In Container (Right Side Default) */
+.sign-in-container {
+    left: 0;
+    width: 50%;
+    z-index: 2;
+}
+
+/* Sign Up Container (Left Side Default - Hidden) */
+.sign-up-container {
+    left: 0;
+    width: 50%;
+    opacity: 0;
+    z-index: 1;
+}
+
+/* Active State for Sign Up (Slide) */
+.auth-card.right-panel-active .sign-in-container {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.auth-card.right-panel-active .sign-up-container {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: show 0.6s;
+}
+
+@keyframes show {
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+/* Overlay Container (The Sliding Cover) */
+.overlay-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.6s ease-in-out;
+    z-index: 100;
+}
+
+.auth-card.right-panel-active .overlay-container {
+    transform: translateX(-100%);
+}
+
+.overlay {
+    background: linear-gradient(135deg, #1CB5E0 0%, #000851 100%);
+    /* Fallback / Default Blue-ish */
+    background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
+    /* App Theme Gradient */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 0 0;
+    color: #FFFFFF;
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+
+.auth-card.right-panel-active .overlay {
+    transform: translateX(50%);
+}
+
+/* Overlay Panel Content */
+.overlay-panel {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 40px;
+    text-align: center;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+
+.overlay-left {
+    transform: translateX(-20%);
+}
+
+.auth-card.right-panel-active .overlay-left {
+    transform: translateX(0);
+}
+
+.overlay-right {
+    right: 0;
+    transform: translateX(0);
+}
+
+.auth-card.right-panel-active .overlay-right {
+    transform: translateX(20%);
+}
+
+/* Typography & Elements in Panels */
 .auth-title {
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
+}
+
+.overlay .auth-title {
+    color: #FFFFFF;
 }
 
 .auth-subtitle {
     color: var(--text-secondary);
     font-size: 0.95rem;
+    margin-bottom: 1.5rem;
 }
 
-/* Form Elements */
+.overlay .auth-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.social-container {
+    margin: 20px 0;
+}
+
+.social {
+    border: 1px solid #DDDDDD;
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
+    height: 48px;
+    width: 48px;
+    transition: all 0.3s ease;
+    background-color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.google-btn {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 0;
+}
+
+.google-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: #ccc;
+}
+
+.social-container a:hover {
+    background-color: var(--bg-secondary);
+}
+
+/* Forms */
 .auth-form {
+    background-color: var(--bg-primary);
     display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: column;
-    gap: 1.25rem;
+    padding: 0;
+    height: 100%;
+    width: 100%;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-left: 2px;
+    width: 100%;
+    margin-bottom: 1rem;
+    text-align: left;
 }
 
 .form-input {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
     background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    padding: 12px 15px;
+    margin: 8px 0;
+    width: 100%;
+    border-radius: 8px;
     color: var(--text-primary);
-    font-size: 1rem;
-    transition: all 0.2s ease;
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    /* Assuming blue accent */
-    background-color: var(--bg-primary);
 }
 
+/* Buttons */
 .auth-btn {
-    margin-top: 1rem;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background-color: var(--text-primary);
-    /* Use text color for contrast (black/white) */
-    color: var(--bg-primary);
-    /* Inverted */
-    font-size: 1rem;
-    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    background-color: var(--accent);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 80ms ease-in;
     cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin-top: 1rem;
 }
 
-.auth-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    opacity: 0.9;
+.auth-btn:active {
+    transform: scale(0.95);
 }
 
-.auth-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
+.auth-btn:focus {
+    outline: none;
 }
 
-/* Toggle Link */
-.auth-toggle {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 0.9rem;
+.auth-btn.ghost {
+    background-color: transparent;
+    border-color: #FFFFFF;
+}
+
+/* Links */
+.forgot-password {
     color: var(--text-secondary);
-}
-
-.toggle-link {
-    color: var(--accent);
-    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    margin: 15px 0;
     cursor: pointer;
     background: none;
     border: none;
-    padding: 0;
-    margin-left: 4px;
-    text-decoration: none;
 }
 
-.toggle-link:hover {
+.forgot-password:hover {
+    color: var(--accent);
     text-decoration: underline;
 }
 
-/* Error Message */
-.auth-error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid #ef4444;
+.error-message {
     color: #ef4444;
-    padding: 10px;
-    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    padding: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .auth-card {
+        min-height: 600px;
+        max-width: 400px;
+        overflow: visible;
+        /* Allow content to flow if needed, or simple stack */
+    }
+
+    /* Disable sliding on simple mobile view, or stack them */
+    .form-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 30px;
+    }
+
+    .sign-in-container,
+    .sign-up-container {
+        width: 100%;
+        position: relative;
+        opacity: 1;
+        z-index: 10;
+        left: 0;
+        transform: none !important;
+        animation: none !important;
+    }
+
+    .sign-up-container {
+        display: none;
+        /* Hide one by default on mobile for simplicity, or toggle via js state */
+    }
+
+    .auth-card.right-panel-active .sign-up-container {
+        display: flex;
+    }
+
+    .auth-card.right-panel-active .sign-in-container {
+        display: none;
+    }
+
+    .overlay-container {
+        display: none;
+        /* Hide fancy overlay on mobile */
+    }
+
+    /* Add a simple toggle link for mobile */
+    .mobile-toggle {
+        display: block;
+        margin-top: 20px;
+        color: var(--accent);
+        cursor: pointer;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-toggle {
+        display: none;
+    }
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-hover, rgba(0, 0, 0, 0.05));
+    transform: rotate(15deg);
+}
+
+/* Reset Password Specifics */
+.reset-password-card {
+    max-width: 450px !important;
+    padding: 3rem !important;
+    min-height: auto !important;
+}
+
+.icon-container {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
     font-size: 0.9rem;
-    text-align: center;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    color: var(--accent);
+    background-color: var(--bg-hover, rgba(59, 130, 246, 0.05));
+    transform: translateX(-2px);
+    text-decoration: none;
 }
