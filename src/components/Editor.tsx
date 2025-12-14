@@ -164,9 +164,7 @@ const Editor: React.FC = () => {
             contentSaveTimeoutRef.current = setTimeout(async () => {
                 try {
                     await noteService.updateNote(noteId, { content: newContent });
-                    // Only refresh if really needed, mostly we don't need to refresh list on content change
-                    // unless we show preview in sidebar which we do.
-                    // But we can be less aggressive.
+                    if (refreshNotes) refreshNotes();
                 } catch (err) {
                     console.error('Failed to save content:', err);
                 }
