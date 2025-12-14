@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { db, type Note } from '../db/db';
 import { Download, Upload, X, Trash2, AlertTriangle, Image } from 'lucide-react';
+import './SettingsModal.css';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -110,67 +111,38 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="modal-overlay" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-        }}>
-            <div className="modal-content" style={{
-                backgroundColor: 'var(--bg-primary)',
-                padding: '2rem',
-                borderRadius: '12px',
-                width: '400px',
-                maxWidth: '90%',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                border: '1px solid var(--border)'
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Settings</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+        <div className="settings-modal-overlay">
+            <div className="settings-modal-content">
+                <div className="settings-header">
+                    <h2 className="settings-title">Settings</h2>
+                    <button onClick={onClose} className="settings-close-btn">
                         <X size={24} />
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
+                <div className="settings-body">
                     {/* Export Section */}
-                    <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
-                        <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="settings-section">
+                        <h3 className="settings-section-title">
                             <Download size={18} /> Export Data
                         </h3>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        <p className="settings-section-description">
                             Download a JSON backup of all your notes.
                         </p>
                         <button
                             onClick={handleExport}
-                            style={{
-                                width: '100%',
-                                padding: '8px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                color: 'var(--text-primary)'
-                            }}
+                            className="settings-action-btn"
                         >
                             Download Backup
                         </button>
                     </div>
 
                     {/* Import Section */}
-                    <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
-                        <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="settings-section">
+                        <h3 className="settings-section-title">
                             <Upload size={18} /> Import Data
                         </h3>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        <p className="settings-section-description">
                             Restore notes from a JSON backup. <br />
                             <span style={{ color: '#ef4444' }}>Warning: This replaces all current notes.</span>
                         </p>
@@ -183,37 +155,44 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                         />
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            style={{
-                                width: '100%',
-                                padding: '8px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                color: 'var(--text-primary)'
-                            }}
+                            className="settings-action-btn"
                         >
                             Select Backup File
                         </button>
                     </div>
 
+                    {/* Maintenance Section */}
+                    <div className="settings-section">
+                        <h3 className="settings-section-title">
+                            <Image size={18} /> Storage Maintenance
+                        </h3>
+                        <p className="settings-section-description">
+                            Scan and delete images that are no longer used in any note.
+                        </p>
+                        <button
+                            onClick={handleCleanupImages}
+                            className="settings-action-btn"
+                        >
+                            Clean Up Unused Images
+                        </button>
+                    </div>
+
                     {/* Danger Zone */}
-                    <div style={{ padding: '1rem', border: '1px solid #ef4444', borderRadius: '8px', marginTop: '1rem' }}>
-                        <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444' }}>
+                    <div className="settings-danger-zone">
+                        <h3 className="settings-danger-title">
                             <AlertTriangle size={18} /> Danger Zone
                         </h3>
                         {isConfirmingReset ? (
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div className="settings-danger-actions">
                                 <button
                                     onClick={handleReset}
-                                    style={{ flex: 1, padding: '8px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                    className="settings-danger-btn-confirm"
                                 >
                                     Confirm Wipe
                                 </button>
                                 <button
                                     onClick={() => setIsConfirmingReset(false)}
-                                    style={{ flex: 1, padding: '8px', backgroundColor: 'var(--bg-secondary)', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                    className="settings-danger-btn-cancel"
                                 >
                                     Cancel
                                 </button>
@@ -221,61 +200,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                         ) : (
                             <button
                                 onClick={() => setIsConfirmingReset(true)}
-                                style={{
-                                    width: '100%',
-                                    padding: '8px',
-                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                    border: '1px solid #ef4444',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontWeight: 500,
-                                    color: '#ef4444',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px'
-                                }}
+                                className="settings-danger-btn-init"
                             >
                                 <Trash2 size={16} /> Delete All Data
                             </button>
                         )}
                     </div>
-
-                </div>
-
-                {/* Maintenance Section */}
-                <div style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '8px', marginTop: '1rem' }}>
-                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Image size={18} /> Storage Maintenance
-                    </h3>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Scan and delete images that are no longer used in any note.
-                    </p>
-                    <button
-                        onClick={handleCleanupImages}
-                        style={{
-                            width: '100%',
-                            padding: '8px',
-                            backgroundColor: 'var(--bg-secondary)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: 500,
-                            color: 'var(--text-primary)'
-                        }}
-                    >
-                        Clean Up Unused Images
-                    </button>
                 </div>
 
                 {status && (
-                    <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '0.9rem', textAlign: 'center' }}>
+                    <div className="settings-status">
                         {status}
                     </div>
                 )}
             </div>
         </div>
-
     );
 };
 

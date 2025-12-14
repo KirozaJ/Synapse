@@ -340,94 +340,44 @@ const Editor: React.FC = () => {
         return <div style={{ flex: 1, padding: '2rem' }}>Loading...</div>;
     }
 
+    const isSplit = mode === 'split';
+
     return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '1rem 2rem 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="editor-container">
+            <div className="editor-header">
+                <div className="back-btn-container">
                     <button
                         onClick={() => navigate('/')}
-                        className="btn-icon"
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginRight: '1rem',
-                            color: 'var(--text-secondary)',
-                            transition: 'background-color 0.2s'
-                        }}
+                        className="back-btn"
                         title="Back to Home"
                     >
                         <ArrowLeft size={20} />
                     </button>
                     {note && (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        <div className="editor-meta">
                             Last updated: {new Date(note.updatedAt).toLocaleString()}
                         </div>
                     )}
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', backgroundColor: 'var(--bg-secondary)', padding: '4px', borderRadius: '8px' }}>
+                <div className="mode-toggles">
                     <button
                         onClick={() => setMode('write')}
-                        style={{
-                            background: mode === 'write' ? 'var(--bg-primary)' : 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            color: mode === 'write' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            fontWeight: 500,
-                            boxShadow: mode === 'write' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                            transition: 'all 0.2s'
-                        }}
+                        className={`mode-btn ${mode === 'write' ? 'active' : ''}`}
                     >
-                        <Edit3 size={16} /> Write
+                        <Edit3 size={16} /> <span className="mode-text">Write</span>
                     </button>
                     <button
                         onClick={() => setMode('split')}
-                        style={{
-                            background: mode === 'split' ? 'var(--bg-primary)' : 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            color: mode === 'split' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            fontWeight: 500,
-                            boxShadow: mode === 'split' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                            transition: 'all 0.2s'
-                        }}
+                        className={`mode-btn ${mode === 'split' ? 'active' : ''}`}
                     >
-                        <Columns size={16} /> Split
+                        <Columns size={16} /> <span className="mode-text">Split</span>
                     </button>
                     <button
                         onClick={() => setMode('preview')}
-                        style={{
-                            background: mode === 'preview' ? 'var(--bg-primary)' : 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            color: mode === 'preview' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            fontWeight: 500,
-                            boxShadow: mode === 'preview' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                            transition: 'all 0.2s'
-                        }}
+                        className={`mode-btn ${mode === 'preview' ? 'active' : ''}`}
                     >
-                        <Eye size={16} /> Preview
+                        <Eye size={16} /> <span className="mode-text">Preview</span>
                     </button>
                 </div>
             </div>
@@ -440,22 +390,13 @@ const Editor: React.FC = () => {
                 onBlur={handleTitleBlur}
                 placeholder="Note Title"
                 readOnly={mode === 'preview'}
-                style={{
-                    width: '100%',
-                    padding: '0.5rem 2rem 0.5rem 2rem',
-                    fontSize: '2rem',
-                    border: 'none',
-                    outline: 'none',
-                    fontWeight: 'bold',
-                    backgroundColor: 'transparent',
-                    color: 'var(--text-primary)'
-                }}
+                className="editor-title-input"
             />
 
-            <div style={{ flex: 1, padding: '0 2rem 2rem 2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                <div style={{ display: 'flex', flex: 1, gap: '2rem', height: '100%' }}>
+            <div className={`editor-content-area ${isSplit ? 'locked-scroll' : ''}`}>
+                <div className={`editor-workspace ${isSplit ? 'full-height' : ''}`}>
                     {(mode === 'write' || mode === 'split') && (
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', height: mode === 'split' ? '600px' : 'auto', overflowY: mode === 'split' ? 'auto' : 'visible' }}>
+                        <div className={`editor-pane ${isSplit ? 'split-scroll-pane' : ''}`}>
                             <textarea
                                 ref={textareaRef}
                                 value={content}
@@ -465,45 +406,19 @@ const Editor: React.FC = () => {
                                 onDragOver={handleDragOver}
                                 onPaste={handlePaste}
                                 placeholder="Start writing using Markdown..."
-                                style={{
-                                    flex: 1,
-                                    width: '100%',
-                                    fontSize: '1.1rem',
-                                    border: 'none',
-                                    outline: 'none',
-                                    resize: 'none',
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-primary)',
-                                    lineHeight: '1.6',
-                                    fontFamily: 'monospace',
-                                    minHeight: '200px'
-                                }}
+                                className="editor-textarea"
                             />
                             {showSuggestions && (
-                                <div style={{
-                                    position: 'absolute',
+                                <div className="suggestion-box" style={{
                                     top: caretCoords.top,
                                     left: caretCoords.left,
-                                    backgroundColor: 'var(--bg-secondary)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                    zIndex: 1000,
-                                    maxHeight: '200px',
-                                    overflowY: 'auto',
-                                    width: '250px'
                                 }}>
                                     {filteredSuggestions.length > 0 ? (
                                         filteredSuggestions.map((s, i) => (
                                             <div
                                                 key={s.id}
                                                 onClick={() => insertLink(s)}
-                                                style={{
-                                                    padding: '8px 12px',
-                                                    cursor: 'pointer',
-                                                    backgroundColor: i === suggestionIndex ? 'var(--accent)' : 'transparent',
-                                                    color: i === suggestionIndex ? 'white' : 'var(--text-primary)'
-                                                }}
+                                                className={`suggestion-item ${i === suggestionIndex ? 'active' : ''}`}
                                                 onMouseEnter={() => setSuggestionIndex(i)}
                                             >
                                                 {s.title || 'Untitled'}
@@ -517,10 +432,10 @@ const Editor: React.FC = () => {
                         </div>
                     )}
 
-                    {mode === 'split' && <div style={{ width: '1px', backgroundColor: 'var(--border)' }}></div>}
+                    {mode === 'split' && <div className="split-divider"></div>}
 
                     {(mode === 'preview' || mode === 'split') && (
-                        <div className="markdown-preview" style={{ flex: 1, color: 'var(--text-primary)', lineHeight: '1.6', height: mode === 'split' ? '600px' : 'auto', overflowY: mode === 'split' ? 'auto' : 'visible' }}>
+                        <div className={`markdown-preview editor-pane ${isSplit ? 'split-scroll-pane' : ''}`}>
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeAddLineNumber]}
@@ -534,23 +449,17 @@ const Editor: React.FC = () => {
                 </div>
 
                 {backlinks.length > 0 && (
-                    <div style={{ marginTop: '3rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--text-secondary)' }}>Linked References</h3>
+                    <div className="linked-refs">
+                        <h3 className="linked-refs-title">Linked References</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {backlinks.map(bn => (
                                 <div
                                     key={bn.id}
                                     onClick={() => navigate(`/note/${bn.id}`)}
-                                    style={{
-                                        padding: '10px',
-                                        backgroundColor: 'var(--bg-secondary)',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9rem'
-                                    }}
+                                    className="ref-item"
                                 >
-                                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{bn.title || 'Untitled Note'}</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                                    <div className="ref-item-title">{bn.title || 'Untitled Note'}</div>
+                                    <div className="ref-item-snippet">
                                         {bn.content}
                                     </div>
                                 </div>

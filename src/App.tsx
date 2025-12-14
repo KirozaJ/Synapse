@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Routes, Route, useNavigate, useMatch } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 // Lazy load large components for code splitting
 const Editor = lazy(() => import('./components/Editor'))
@@ -11,6 +12,7 @@ import './App.css'
 function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
@@ -66,6 +68,10 @@ function App() {
       navigate(`/note/${id}`)
       setSearchQuery('')
       setSelectedTag(null)
+      // On mobile, close sidebar after adding note
+      if (window.innerWidth <= 768) {
+        setSidebarOpen(false);
+      }
     } catch (error) {
       console.error('Failed to add note:', error)
     }
@@ -98,8 +104,18 @@ function App() {
         onSelectTag={setSelectedTag}
         theme={theme}
         toggleTheme={toggleTheme}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {!match && (
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+        )}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
           <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', color: 'var(--text-secondary)' }}>Loading...</div>}>
             <Routes>
