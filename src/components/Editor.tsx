@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { db, type Note } from '../db/db';
+import type { Note } from '../types';
+import { noteService } from '../services/NoteService';
 import { ArrowLeft, Eye, Edit3, Columns } from 'lucide-react';
 import getCaretCoordinates from 'textarea-caret';
 import { visit } from 'unist-util-visit';
 import './Editor.css';
+import { useContextOutlet } from '../App';
 
 // Plugin to add source position to elements
 function rehypeAddLineNumber() {
@@ -31,17 +32,21 @@ const Editor: React.FC = () => {
     const titleInputRef = useRef<HTMLInputElement>(null);
     const lastFocusKeyRef = useRef<string>('');
 
-    const note = useLiveQuery(
-        () => (noteId ? db.notes.get(noteId) : undefined),
-        [noteId]
-    );
+    // Access global notes and refresh function from App layout
+    const { notes: allNotes, refreshNotes } = useContextOutlet();
 
-    const allNotes = useLiveQuery(() => db.notes.toArray(), []);
+    // Derived state for current note
+    const note = allNotes.find(n => n.id === noteId);
 
     const [title, setTitle] = useState('');
     const [originalTitle, setOriginalTitle] = useState('');
     const [content, setContent] = useState('');
     const [mode, setMode] = useState<'write' | 'preview' | 'split'>('write');
+
+    // Refs for debouncing saves
+    const contentSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const titleSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastNoteIdRef = useRef<number | null>(null);
 
     // Autocomplete State
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -52,83 +57,91 @@ const Editor: React.FC = () => {
     // Update local state when note loads
     useEffect(() => {
         if (note) {
-            setTitle(note.title);
-            setOriginalTitle(note.title);
-            setContent(note.content);
+            // Only update local state if the note ID has changed
+            // This prevents overwriting unsaved local changes when the parent list updates
+            // or when switching modes.
+            if (lastNoteIdRef.current !== note.id) {
+                setTitle(note.title);
+                setOriginalTitle(note.title);
+                setContent(note.content);
+                lastNoteIdRef.current = note.id;
 
-            // Smart Auto-focus
-            if (mode === 'write') {
-                const focusKey = `${note.id}-${mode}`;
-                if (lastFocusKeyRef.current !== focusKey) {
-                    lastFocusKeyRef.current = focusKey;
-                    setTimeout(() => {
-                        // If title is empty, it's likely a new note -> Focus Title
-                        // Otherwise -> Focus Content
-                        if (!note.title.trim()) {
-                            titleInputRef.current?.focus();
-                        } else {
-                            if (textareaRef.current) {
-                                const len = textareaRef.current.value.length;
-                                textareaRef.current.focus();
-                                textareaRef.current.setSelectionRange(len, len);
+                // Smart Auto-focus logic only when switching notes
+                if (mode === 'write') {
+                    const focusKey = `${note.id}-${mode}`;
+                    if (lastFocusKeyRef.current !== focusKey) {
+                        lastFocusKeyRef.current = focusKey;
+                        setTimeout(() => {
+                            if (!note.title.trim()) {
+                                titleInputRef.current?.focus();
+                            } else {
+                                if (textareaRef.current) {
+                                    const len = textareaRef.current.value.length;
+                                    textareaRef.current.focus();
+                                    textareaRef.current.setSelectionRange(len, len);
+                                }
                             }
-                        }
-                    }, 0);
+                        }, 0);
+                    }
                 }
             }
-        } else {
-            setTitle('');
-            setOriginalTitle('');
-            setContent('');
         }
-    }, [note, mode]);
+    }, [note, noteId, mode]); // Mode is still needed for auto-focus logic, but guarded by ID check
 
-    const handleTitleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newTitle = e.target.value;
         setTitle(newTitle);
-        // We defer the DB update to onBlur OR debounced, but for now let's keep it here 
-        // to maintain responsiveness, but REFACTORING happens only on blur.
+
         if (noteId) {
-            await db.notes.update(noteId, { title: newTitle, updatedAt: new Date().toISOString() });
+            if (titleSaveTimeoutRef.current) clearTimeout(titleSaveTimeoutRef.current);
+
+            titleSaveTimeoutRef.current = setTimeout(async () => {
+                try {
+                    await noteService.updateNote(noteId, { title: newTitle });
+                    if (refreshNotes) refreshNotes();
+                } catch (err) {
+                    console.error('Failed to save title:', err);
+                }
+            }, 1000); // 1 second debounce
         }
     };
 
     const handleTitleBlur = async () => {
+        // Force immediate save on blur if pending
+        if (titleSaveTimeoutRef.current) clearTimeout(titleSaveTimeoutRef.current);
+
         if (noteId && title !== originalTitle && originalTitle.trim() !== '') {
             // Title changed! We need to refactor links.
             const oldLink = `[[${originalTitle}]]`;
             const newLink = `[[${title}]]`;
 
-            // Find all notes that contain the old link
-            const notesToUpdate = await db.notes.filter(n => n.content.includes(oldLink)).toArray();
+            const notesToUpdate = allNotes.filter(n => n.content.includes(oldLink));
 
             if (notesToUpdate.length > 0) {
-                const updates = notesToUpdate.map(n => ({
-                    key: n.id!,
-                    changes: {
-                        content: n.content.replaceAll(oldLink, newLink),
-                        updatedAt: new Date().toISOString()
-                    }
-                }));
-
-                // Bulk update
-                await Promise.all(updates.map(u => db.notes.update(u.key, u.changes)));
+                for (const n of notesToUpdate) {
+                    await noteService.updateNote(n.id, {
+                        content: n.content.replaceAll(oldLink, newLink)
+                    });
+                }
                 console.log(`Refactored ${notesToUpdate.length} links from "${originalTitle}" to "${title}"`);
+                if (refreshNotes) refreshNotes();
             }
+            // Ensure title is saved
+            await noteService.updateNote(noteId, { title: title });
             setOriginalTitle(title);
+        } else if (noteId && title !== note?.title) {
+            await noteService.updateNote(noteId, { title: title });
+            if (refreshNotes) refreshNotes();
         }
     };
 
-    const handleContentChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newContent = e.target.value;
         setContent(newContent);
 
         // Autocomplete Logic
         const cursorPosition = e.target.selectionStart;
         const textBeforeCursor = newContent.slice(0, cursorPosition);
-
-        // Regex to check if we are typing a [[link
-        // Matches [[ followed by any chars except ]
         const match = textBeforeCursor.match(/\[\[([^\]]*)$/);
 
         if (match) {
@@ -146,7 +159,18 @@ const Editor: React.FC = () => {
         }
 
         if (noteId) {
-            await db.notes.update(noteId, { content: newContent, updatedAt: new Date().toISOString() });
+            if (contentSaveTimeoutRef.current) clearTimeout(contentSaveTimeoutRef.current);
+
+            contentSaveTimeoutRef.current = setTimeout(async () => {
+                try {
+                    await noteService.updateNote(noteId, { content: newContent });
+                    // Only refresh if really needed, mostly we don't need to refresh list on content change
+                    // unless we show preview in sidebar which we do.
+                    // But we can be less aggressive.
+                } catch (err) {
+                    console.error('Failed to save content:', err);
+                }
+            }, 1000); // 1 second debounce
         }
     };
 
@@ -173,9 +197,8 @@ const Editor: React.FC = () => {
         const cursorPosition = textareaRef.current?.selectionStart || 0;
         const textBeforeCursor = content.slice(0, cursorPosition);
         const textAfterCursor = content.slice(cursorPosition);
-
-        // Find start of [[
         const match = textBeforeCursor.match(/\[\[([^\]]*)$/);
+
         if (match && match.index !== undefined) {
             const startPos = match.index;
             const newText =
@@ -186,58 +209,23 @@ const Editor: React.FC = () => {
             setContent(newText);
             setShowSuggestions(false);
 
-            // Wait for render then focus and update DB
             setTimeout(async () => {
                 if (textareaRef.current) {
-                    const newCursorPos = startPos + selectedNote.title.length + 4; // [[ + ]]
+                    const newCursorPos = startPos + selectedNote.title.length + 4;
                     textareaRef.current.focus();
                     textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
                 }
                 if (noteId) {
-                    await db.notes.update(noteId, { content: newText, updatedAt: new Date().toISOString() });
+                    await noteService.updateNote(noteId, { content: newText });
+                    if (refreshNotes) refreshNotes();
                 }
             }, 0);
         }
     };
 
-    // Image Helper
-    const processFiles = async (files: FileList | File[]) => {
-        const fileArray = Array.from(files);
-        let contentChanged = false;
-        let newContent = content; // Start with current state content
-        // Note: Using 'content' from state closure might be stale if typing fast, 
-        // but for dropping/pasting it's usually acceptable. 
-        // ideally we use the value from the event target but for drop/paste we don't always have it.
-
-        let cursorPosition = textareaRef.current?.selectionStart || 0;
-
-        for (const file of fileArray) {
-            if (file.type.startsWith('image/')) {
-                const fileId = await db.files.add({
-                    name: file.name,
-                    type: file.type,
-                    data: file,
-                    createdAt: new Date().toISOString()
-                });
-
-                const textBeforeCursor = newContent.slice(0, cursorPosition);
-                const textAfterCursor = newContent.slice(cursorPosition);
-
-                // Insert standard markdown image syntax with custom protocol
-                const imageMarkdown = `![${file.name}](synapse-img://${fileId})\n`;
-
-                newContent = textBeforeCursor + imageMarkdown + textAfterCursor;
-                cursorPosition += imageMarkdown.length;
-                contentChanged = true;
-            }
-        }
-
-        if (contentChanged) {
-            setContent(newContent);
-            if (noteId) {
-                await db.notes.update(noteId, { content: newContent, updatedAt: new Date().toISOString() });
-            }
-        }
+    // Placeholder for Image Processing
+    const processFiles = async (_files: FileList | File[]) => {
+        alert("Image upload is currently disabled during the cloud migration. This feature will return in a future update.");
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
@@ -283,7 +271,8 @@ const Editor: React.FC = () => {
                 const newContent = lines.join('\n');
                 setContent(newContent);
                 if (noteId) {
-                    await db.notes.update(noteId, { content: newContent, updatedAt: new Date().toISOString() });
+                    await noteService.updateNote(noteId, { content: newContent });
+                    // refreshNotes? checks state, maybe not needed immediately.
                 }
             }
         }
@@ -323,11 +312,8 @@ const Editor: React.FC = () => {
             return <input {...props} />;
         },
         img(props: any) {
+            // Disable custom image rendering for now
             const { src, alt, ...rest } = props;
-            if (src && src.startsWith('synapse-img://')) {
-                const id = parseInt(src.replace('synapse-img://', ''), 10);
-                return <AsyncImage id={id} alt={alt} {...rest} />;
-            }
             return <img src={src} alt={alt} {...rest} style={{ maxWidth: '100%', borderRadius: '8px' }} />;
         }
     };
@@ -336,8 +322,9 @@ const Editor: React.FC = () => {
         return <div style={{ padding: '2rem' }}>Note not found</div>;
     }
 
-    if (note === undefined && noteId) {
-        return <div style={{ flex: 1, padding: '2rem' }}>Loading...</div>;
+    // If not found in loaded notes
+    if (!note) {
+        return <div style={{ flex: 1, padding: '2rem' }}>Loading or Note Not Found...</div>;
     }
 
     const isSplit = mode === 'split';
@@ -470,28 +457,6 @@ const Editor: React.FC = () => {
             </div>
         </div>
     );
-};
-
-// Helper component to load image async
-const AsyncImage: React.FC<{ id: number; alt?: string;[key: string]: any }> = ({ id, alt, ...rest }) => {
-    const [src, setSrc] = useState<string | null>(null);
-
-    useEffect(() => {
-        const load = async () => {
-            const file = await db.files.get(id);
-            if (file) {
-                const url = URL.createObjectURL(file.data);
-                setSrc(url);
-            }
-        };
-        load();
-        return () => {
-            if (src) URL.revokeObjectURL(src);
-        };
-    }, [id]);
-
-    if (!src) return <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Loading image...</span>;
-    return <img src={src} alt={alt} {...rest} style={{ maxWidth: '100%', borderRadius: '8px', margin: '1rem 0' }} />;
 };
 
 export default Editor;

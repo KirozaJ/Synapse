@@ -50,10 +50,13 @@ button:active:not(:disabled) {
     justify-content: center;
     cursor: pointer;
     color: var(--text-secondary);
+    background-color: transparent;
+    border: 1px solid var(--border);
 }
 
 .btn-icon:hover {
     background-color: var(--bg-primary);
+    border-color: var(--accent);
     color: var(--accent);
 }
 
